@@ -4,7 +4,7 @@ if hash colorgcc 2>/dev/null; then
 	CC=colorgcc
 fi
 cstd='-std=gnu99'
-CFLAGS="-Wall -Wextra -pedantic $cstd -fPIC -O2 -ffast-math -g $*"
+CFLAGS="-Wall -Wextra -pedantic $cstd -pthread -fPIC -O2 -ffast-math -g $*"
 libs='sdl2 gl'
 if ! hash pkg-config 2>/dev/null; then
 	echo "pkg-config is missing" 1>&2
@@ -12,7 +12,7 @@ if ! hash pkg-config 2>/dev/null; then
 fi
 CFLAGS="$CFLAGS $(pkg-config --cflags $libs)"
 LDLIBS="$(pkg-config --libs $libs)"
-LLIBS='-lSDL2_image -lSDL2_mixer -lm'
+LLIBS='-lSDL2_image -lSDL2_mixer -lpthread -lm'
 CCM="$CC $cstd -MM"
 cat <<'EOF'>.gitignore
 .gitignore
@@ -50,14 +50,14 @@ done
 cat <<'EOF' >>Makefile
 
 
-default: libgut.a libgut.so $(DEMOS)
-libgut.a: $(OBJECTS)
-	ar -cr libgut.a $(OBJECTS)
-libgut.so: $(OBJECTS)
-	$(CC) -shared -Wl,-soname,libgut.so -o libgut.so $(OBJECTS)
+default: libsmt.a libsmt.so $(DEMOS)
+libsmt.a: $(OBJECTS)
+	ar -cr libsmt.a $(OBJECTS)
+libsmt.so: $(OBJECTS)
+	$(CC) -shared -Wl,-soname,libsmt -o libsmt.so $(OBJECTS)
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS)
 clean:
-	rm -f libgut.a libgut.so
+	rm -f libsmt.a libsmt.so
 	rm -f $(OBJECTS)
 EOF
