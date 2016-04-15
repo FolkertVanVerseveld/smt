@@ -1,8 +1,8 @@
 #ifndef SMT__SMT_H
 #define SMT__SMT_H
 
-#include <SDL2/SDL.h>
 #include "smt.h"
+#include <SDL2/SDL.h>
 
 #define ERR_SMT 1
 #define ERR_SDL 2
@@ -12,7 +12,6 @@
 #define INIT_SDL 2
 #define INIT_VFX 4
 #define INIT_IMG 8
-#define INIT_IMG_PNG 16
 
 #define SMT_GL_INIT 1
 #define SMT_GL_DOUBLE 2
@@ -39,6 +38,9 @@ struct _smtconf {
 		unsigned libs;
 	} init;
 	struct {
+		unsigned img;
+	} opt;
+	struct {
 		SDL_GLContext data[GLSZ];
 		unsigned state[GLSZ];
 		unsigned rpop[GLSZ];
@@ -60,7 +62,12 @@ struct _smtconf {
 		unsigned rpop[SPRSZ];
 		unsigned n, ri;
 	} spr;
+	struct {
+		SDL_Cursor *data[SMT_CURS_MAX];
+		unsigned init, cur;
+	} curs;
 	SDL_Event ev;
+	char *drop;
 };
 
 #define error(mask) do{\

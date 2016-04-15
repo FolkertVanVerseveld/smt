@@ -1,11 +1,18 @@
+#include <ctype.h>
 #include <stdlib.h>
-#include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_keycode.h>
 #include "_smt.h"
 #include "log.h"
 
-struct _smtconf _smt;
+struct _smtconf _smt = {
+	.opt = {
+		.img = SMT_IMG_PNG | SMT_IMG_JPG
+	}
+};
+
+struct smtconf smt;
 
 inline void _smt_error(unsigned mask)
 {
@@ -13,6 +20,8 @@ inline void _smt_error(unsigned mask)
 	++_smt.err.count;
 	_smt_pge();
 }
+
+void _smt_freecurs();
 
 static void _smt_stop(void)
 {
@@ -36,10 +45,12 @@ static void _smt_stop(void)
 		if (_smt.win.state[i] & SMT_GL_INIT)
 			smtFreewin(i);
 	}
+	_smt_freecurs();
 	if (_smt.init.libs & INIT_IMG)
 		IMG_Quit();
 	if (_smt.init.libs & INIT_SDL)
 		SDL_Quit();
+	if (_smt.drop) SDL_free(_smt.drop);
 }
 
 /** push back error on stack. not thread-safe */
@@ -114,68 +125,10 @@ fail:
 	return SMT_ERR_STATE;
 }
 
-unsigned _smt_flags2sdl(unsigned flags)
-{
-	unsigned sdl = SDL_WINDOW_OPENGL;
-	if (flags & SMT_WIN_FULL_SLOW)
-		sdl |= SDL_WINDOW_FULLSCREEN;
-	if (flags & SMT_WIN_FULL_FAST)
-		sdl |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	if (!(flags & SMT_WIN_VISIBLE))
-		sdl |= SDL_WINDOW_HIDDEN;
-	if (!(flags & SMT_WIN_BORDER))
-		sdl |= SDL_WINDOW_BORDERLESS;
-	if (flags & SMT_WIN_RESIZE)
-		sdl |= SDL_WINDOW_RESIZABLE;
-	if (flags & SMT_WIN_MIN)
-		sdl |= SDL_WINDOW_MINIMIZED;
-	if (flags & SMT_WIN_MAX)
-		sdl |= SDL_WINDOW_MAXIMIZED;
-	if (flags & SMT_WIN_GRAB)
-		sdl |= SDL_WINDOW_INPUT_GRABBED;
-	if (flags & SMT_WIN_HDPI)
-		sdl |= SDL_WINDOW_ALLOW_HIGHDPI;
-	return sdl;
-}
-
-int smtCreatewin(unsigned *win, unsigned w, unsigned h, const char *title, unsigned flags)
-{
-	if (_smt.win.n >= WINSZ)
-		return SMT_ERR_OVERFLOW;
-	unsigned sdl = _smt_flags2sdl(flags);
-	SDL_Window *scr = SDL_CreateWindow(
-		title,
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		w, h, sdl
-	);
-	if (!scr) sdl_error();
-	unsigned i;
-	if (_smt.win.ri)
-		i = _smt.win.rpop[--_smt.win.ri];
-	else
-		i = _smt.win.n++;
-	_smt.win.scr[i] = scr;
-	_smt.win.w[i] = w;
-	_smt.win.h[i] = h;
-	_smt.win.flags[i] = flags;
-	_smt.win.state[i] = SMT_WIN_INIT;
-	*win = i;
-	return 0;
-fail:
-	return 1;
-}
-
 #define glchk(i) do{\
 	if (i >= GLSZ)\
 		return SMT_ERR_OVERFLOW;\
 	if (!(_smt.gl.state[i] & SMT_GL_INIT))\
-		return SMT_ERR_STATE;\
-	}while(0)
-#define winchk(i) do{\
-	if (i >= WINSZ)\
-		return SMT_ERR_OVERFLOW;\
-	if (!(_smt.win.state[i] & SMT_WIN_INIT))\
 		return SMT_ERR_STATE;\
 	}while(0)
 #define sprchk(i) do{\
@@ -197,19 +150,72 @@ int smtFreegl(unsigned i)
 	return 0;
 }
 
-int smtFreespr(unsigned i)
+static inline void _smt_kbpcpy(void)
 {
-	sprchk(i);
-	_smt.spr.rpop[_smt.spr.ri++] = i;
-	_smt.spr.state[i] = 0;
-	return 0;
+	register unsigned smod, mod, scan, virt;
+	smod = _smt.ev.key.keysym.mod;
+	scan = _smt.ev.key.keysym.scancode;
+	virt = _smt.ev.key.keysym.sym;
+	mod = 0;
+	if (smod & KMOD_LSHIFT)
+		mod |= SMT_MOD_LSHIFT;
+	if (smod & KMOD_RSHIFT)
+		mod |= SMT_MOD_RSHIFT;
+	if (smod & KMOD_LALT)
+		mod |= SMT_MOD_LALT;
+	if (smod & KMOD_RALT)
+		mod |= SMT_MOD_RALT;
+	if (smod & KMOD_LCTRL)
+		mod |= SMT_MOD_LCTRL;
+	if (smod & KMOD_RCTRL)
+		mod |= SMT_MOD_RCTRL;
+	#define key2scan(x) ((x) & ~(SDLK_SCANCODE_MASK))
+	if (virt >= SDLK_F1 && virt <= SDLK_F12)
+		virt = key2scan(virt) - SDL_SCANCODE_F1 + SMT_KEY_F1;
+	else if (virt >= SDLK_F13 && virt <= SDLK_F24)
+		virt = key2scan(virt) - SDL_SCANCODE_F13 + SMT_KEY_F(13);
+	else {
+		switch (virt) {
+		case SDLK_RIGHT: virt = SMT_KEY_RIGHT; break;
+		case SDLK_UP: virt = SMT_KEY_UP; break;
+		case SDLK_LEFT: virt = SMT_KEY_LEFT; break;
+		case SDLK_DOWN: virt = SMT_KEY_DOWN; break;
+		}
+	}
+	smt.kbp.mod = mod;
+	smt.kbp.scan = scan;
+	smt.kbp.virt = virt;
 }
 
-int smtSwapgl(unsigned win)
+unsigned smtQwerty(void)
 {
-	winchk(win);
-	SDL_GL_SwapWindow(_smt.win.scr[win]);
-	return 0;
+	register unsigned mod, virt, key;
+	const unsigned char numup[] = {")!@#$%^&*("};
+	mod = _smt.ev.key.keysym.mod;
+	virt = _smt.ev.key.keysym.sym;
+	key = virt & 0xff;
+	if (isprint(key) && (mod & KMOD_SHIFT)) {
+		/* map ranged keys */
+		if (key >= 'a' && key <= 'z')
+			return key - 'a' + 'A';
+		if (key >= '0' && key <= '9')
+			return numup[key - '0'];
+		/* map special keys */
+		switch (key) {
+		case '`': return '~';
+		case '-': return '_';
+		case '=': return '+';
+		case '[': return '{';
+		case ']': return '}';
+		case '\\': return '|';
+		case ';': return ':';
+		case '\'': return '"';
+		case ',': return '<';
+		case '.': return '>';
+		case '/': return '?';
+		}
+	}
+	return key;
 }
 
 unsigned smtPollev(void)
@@ -218,25 +224,25 @@ unsigned smtPollev(void)
 		return SMT_EV_DONE;
 	switch (_smt.ev.type) {
 	case SDL_QUIT: return SMT_EV_QUIT;
+	case SDL_KEYDOWN: _smt_kbpcpy(); return SMT_EV_KEY_DOWN;
+	case SDL_KEYUP: _smt_kbpcpy(); return SMT_EV_KEY_UP;
+	case SDL_MOUSEMOTION:
+		smt.mouse.x = _smt.ev.motion.x;
+		smt.mouse.y = _smt.ev.motion.y;
+		smt.mouse.state = _smt.ev.motion.state;
+		return SMT_EV_MOUSE_MOTION;
+	case SDL_DROPFILE:
+		if (_smt.drop) SDL_free(_smt.drop);
+		smt.drop = _smt.drop = strdup(_smt.ev.drop.file);
+		return SMT_EV_DROP_FILE;
 	default: return SMT_EV_UNKNOWN;
 	}
 }
 
-int smtFreewin(unsigned i)
-{
-	if (i >= WINSZ)
-		return SMT_ERR_OVERFLOW;
-	if (!(_smt.win.state[i] & SMT_WIN_INIT))
-		return SMT_ERR_STATE;
-	_smt.win.rpop[_smt.win.ri++] = i;
-	_smt.win.state[i] = 0;
-	SDL_DestroyWindow(_smt.win.scr[i]);
-	_smt.win.scr[i] = NULL;
-	return 0;
-}
-
 int smtInit(int *argc, char **argv)
 {
+	(void)argc;
+	(void)argv;
 	atexit(_smt_stop);
 	_smt.init.libs |= INIT_SMT;
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -245,10 +251,15 @@ int smtInit(int *argc, char **argv)
 	if (SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1) != 0)
 		sdl_error();
 	_smt.init.gl |= SMT_GL_DOUBLE;
-	int imgmask = IMG_INIT_PNG | IMG_INIT_JPG;
-	if ((IMG_Init(imgmask) & imgmask) != imgmask)
-		img_error();
-	_smt.init.libs |= INIT_IMG;
+	unsigned img = _smt.opt.img;
+	int imgmask = 0;
+	if (img & SMT_IMG_PNG) imgmask |= IMG_INIT_PNG;
+	if (img & SMT_IMG_JPG) imgmask |= IMG_INIT_JPG;
+	if (imgmask) {
+		if ((IMG_Init(imgmask) & imgmask) != imgmask)
+			img_error();
+		_smt.init.libs |= INIT_IMG;
+	}
 	return 0;
 fail:
 	fputs("smt: failed to init\n", stderr);
@@ -260,4 +271,14 @@ void smtExit(int status)
 	if (_smt.err.count != _smt.err.rcount)
 		fprintf(stderr, "smt: pending errors: %d\n", (int)_smt.err.count - _smt.err.rcount);
 	exit(status);
+}
+
+char *smtGetclip(void)
+{
+	return SDL_GetClipboardText();
+}
+
+int smtSetclip(const char *str)
+{
+	return SDL_SetClipboardText(str);
 }

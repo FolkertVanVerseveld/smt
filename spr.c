@@ -2,6 +2,18 @@
 #include <SDL2/SDL_image.h>
 #include "_smt.h"
 
+unsigned smtOptimg(unsigned opt)
+{
+	return _smt.opt.img == opt || opt > SMT_IMG_ALL ? opt : (_smt.opt.img = opt);
+}
+
+#define sprchk(i) do{\
+	if (i >= SPRSZ)\
+		return SMT_ERR_OVERFLOW;\
+	if (!(_smt.spr.state[i] & SMT_SPR_INIT))\
+		return SMT_ERR_STATE;\
+	}while(0)
+
 #define PALSZ 256
 static void _smt_setpal(SDL_Surface *surf)
 {
@@ -21,7 +33,7 @@ static void _smt_setpal(SDL_Surface *surf)
 	glPixelMapfv(GL_PIXEL_MAP_I_TO_B, max, b);
 }
 
-static inline bool _smt_ispow2(unsigned x)
+static inline int _smt_ispow2(unsigned x)
 {
 	return x && !(x & (x - 1));
 }
@@ -75,23 +87,28 @@ static inline unsigned _smt_nextpow2(unsigned x)
 
 static int _smt_resizesurf(SDL_Surface **surf, unsigned size);
 
-static int _smt_dirtymap(SDL_Surface **surf, unsigned flags)
+static int _smt_dirtymap(SDL_Surface **surf, unsigned *w, unsigned *h, unsigned flags)
 {
+	int ret = 0;
 	if ((*surf)->w != (*surf)->h || !_smt_ispow2((unsigned)(*surf)->w)) {
 		unsigned max = (int)((*surf)->w > (*surf)->h ? (*surf)->w : (*surf)->h);
 		if (max < SMT_MIN_TEXTURE_SIZE)
 			max = SMT_MIN_TEXTURE_SIZE;
 		max = _smt_nextpow2(max);
 		if (max > SMT_MAX_TEXTURE_SIZE) {
-			SDL_FreeSurface(*surf);
-			return SMT_ERR_OVERFLOW;
+			ret = SMT_ERR_OVERFLOW;
+			goto fail;
 		}
 		if ((flags & SMT_SPR_RESIZE) && !_smt_resizesurf(surf, max)) {
-			SDL_FreeSurface(*surf);
-			return SMT_ERR_STATE;
+			ret = SMT_ERR_STATE;
+			goto fail;
 		}
 	}
-	return 0;
+fail:
+	if (w) *w = (*surf)->w;
+	if (h) *h = (*surf)->h;
+	if (ret) SDL_FreeSurface(*surf);
+	return ret;
 }
 
 int smtCreatespr(unsigned *spr, unsigned w, unsigned h, const char *name, GLuint tex, unsigned flags)
@@ -100,14 +117,14 @@ int smtCreatespr(unsigned *spr, unsigned w, unsigned h, const char *name, GLuint
 		return SMT_ERR_OVERFLOW;
 	SDL_Surface *surf = _smt_gettex(name);
 	if (!surf) goto fail;
-	unsigned tw, th;
-	tw = surf->w;
-	th = surf->h;
-	if ((flags & SMT_SPR_STRICT) && (tw != w || th != h)) {
+	unsigned pw, ph, tw, th;
+	pw = surf->w;
+	ph = surf->h;
+	if ((flags & SMT_SPR_STRICT) && (pw != w || ph != h)) {
 		SDL_FreeSurface(surf);
 		return SMT_ERR_STATE;
 	}
-	int ret = _smt_dirtymap(&surf, flags);
+	int ret = _smt_dirtymap(&surf, &tw, &th, flags);
 	if (ret != 0) return ret;
 	_smt_maptex(surf, tex);
 	unsigned i;
@@ -116,15 +133,25 @@ int smtCreatespr(unsigned *spr, unsigned w, unsigned h, const char *name, GLuint
 	else
 		i = _smt.spr.n++;
 	_smt.spr.tex[i] = tex;
-	_smt.spr.w[i] = tw;
-	_smt.spr.h[i] = th;
-	_smt.spr.tw[i] = surf->w;
-	_smt.spr.th[i] = surf->h;
+	_smt.spr.w[i] = pw;
+	_smt.spr.h[i] = ph;
+	_smt.spr.tw[i] = tw;
+	_smt.spr.th[i] = th;
 	_smt.spr.state[i] = SMT_SPR_INIT;
 	*spr = i;
 	return 0;
 fail:
 	return SMT_ERR_STATE;
+}
+
+int smtGetsizespr(unsigned spr, unsigned *pw, unsigned *ph, unsigned *vw, unsigned *vh)
+{
+	sprchk(spr);
+	if (pw) *pw = _smt.spr.w[spr];
+	if (ph) *ph = _smt.spr.h[spr];
+	if (vw) *vw = _smt.spr.tw[spr];
+	if (vh) *vh = _smt.spr.th[spr];
+	return 0;
 }
 
 static int _smt_resizesurf(SDL_Surface **surf, unsigned size)
@@ -150,5 +177,13 @@ static int _smt_resizesurf(SDL_Surface **surf, unsigned size)
 	SDL_UnlockSurface(orig);
 	*surf = new;
 	SDL_FreeSurface(orig);
+	return 0;
+}
+
+int smtFreespr(unsigned i)
+{
+	sprchk(i);
+	_smt.spr.rpop[_smt.spr.ri++] = i;
+	_smt.spr.state[i] = 0;
 	return 0;
 }
