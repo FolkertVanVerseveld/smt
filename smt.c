@@ -8,7 +8,8 @@
 
 struct _smtconf _smt = {
 	.opt = {
-		.img = SMT_IMG_PNG | SMT_IMG_JPG
+		.img = SMT_IMG_PNG | SMT_IMG_JPG,
+		.sfx = SMT_SFX_ALUT | SMT_SFX_AL_CTX
 	}
 };
 
@@ -27,6 +28,7 @@ static void _smt_stop(void)
 {
 	/* make sure all acquired resources are freed */
 	unsigned i;
+	_smt_freesfx();
 	smtDbgf(
 		"gl: %u, win: %u, spr: %u\n",
 		_smt.gl.n - _smt.gl.ri,
@@ -260,6 +262,7 @@ int smtInit(int *argc, char **argv)
 			img_error();
 		_smt.init.libs |= INIT_IMG;
 	}
+	if (_smt_initsfx(argc, argv) != 0) goto fail;
 	return 0;
 fail:
 	fputs("smt: failed to init\n", stderr);

@@ -3,6 +3,8 @@
 
 #include "smt.h"
 #include <SDL2/SDL.h>
+#include <AL/alut.h>
+#include <vorbis/vorbisfile.h>
 
 #define ERR_SMT 1
 #define ERR_SDL 2
@@ -12,9 +14,14 @@
 #define INIT_SDL 2
 #define INIT_VFX 4
 #define INIT_IMG 8
+#define INIT_ALUT 16
 
 #define SMT_GL_INIT 1
 #define SMT_GL_DOUBLE 2
+
+#define SMT_SFX_INIT 1
+#define SMT_ALUT_INIT 2
+#define SMT_AL_CTX_INIT 4
 
 /* window states */
 #define SMT_WIN_INIT 1
@@ -35,10 +42,12 @@ struct _smtconf {
 	struct {
 		unsigned sdl;
 		unsigned gl;
+		unsigned sfx;
 		unsigned libs;
 	} init;
 	struct {
 		unsigned img;
+		unsigned sfx;
 	} opt;
 	struct {
 		SDL_GLContext data[GLSZ];
@@ -46,6 +55,10 @@ struct _smtconf {
 		unsigned rpop[GLSZ];
 		unsigned n, ri, cur;
 	} gl;
+	struct {
+		ALCcontext *ctx;
+		ALCdevice *dev;
+	} al;
 	struct {
 		unsigned flags[WINSZ];
 		unsigned w[WINSZ], h[WINSZ];
@@ -87,5 +100,7 @@ void _smt_err(unsigned type, unsigned code);
 unsigned _smt_perr(void);
 void _smt_pge(void);
 void _smt_error(unsigned mask);
+void _smt_freesfx(void);
+int _smt_initsfx(int *argc, char **argv);
 
 #endif

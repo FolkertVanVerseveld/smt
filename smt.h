@@ -2,6 +2,7 @@
 #define SMT_SMT_H
 
 #include <stddef.h>
+#include <AL/al.h>
 #include <GL/gl.h>
 
 #define SMT_WIN_FULL_SLOW 1
@@ -16,6 +17,8 @@
 
 #define SMT_ERR_OVERFLOW 1
 #define SMT_ERR_STATE 2
+#define SMT_ERR_DOMAIN 3
+#define SMT_ERR_NOMEM 4
 
 #define SMT_EV_DONE 0
 #define SMT_EV_QUIT 1
@@ -72,6 +75,10 @@
 #define SMT_IMG_JPG 2
 #define SMT_IMG_ALL 3
 
+#define SMT_SFX_ALUT 1
+#define SMT_SFX_AL_CTX 2
+#define SMT_SFX_ALL 3
+
 struct smtconf {
 	struct {
 		unsigned mod;
@@ -115,6 +122,7 @@ int smtSetclip(const char *str);
 
 unsigned smtPollev(void);
 unsigned smtQwerty(void);
+int smtOggfv(const char *name, char **buf, size_t *count, ALenum *format, ALsizei *freq);
 void smtExit(int status) __attribute__ ((noreturn));
 
 #endif
