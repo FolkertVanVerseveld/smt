@@ -2,6 +2,7 @@
 #define SMT__SMT_H
 
 #include "smt.h"
+#include "log.h"
 #include <SDL2/SDL.h>
 #include <AL/alut.h>
 #include <vorbis/vorbisfile.h>
@@ -53,7 +54,7 @@ struct _smtconf {
 		SDL_GLContext data[GLSZ];
 		unsigned state[GLSZ];
 		unsigned rpop[GLSZ];
-		unsigned n, ri, cur;
+		unsigned n, ri, cur, curw;
 	} gl;
 	struct {
 		ALCcontext *ctx;
@@ -61,8 +62,8 @@ struct _smtconf {
 	} al;
 	struct {
 		unsigned flags[WINSZ];
-		unsigned w[WINSZ], h[WINSZ];
-		unsigned state[WINSZ];
+		SDL_Rect physic[WINSZ], desk[WINSZ];
+		unsigned state[WINSZ], index[WINSZ];
 		SDL_Window *scr[WINSZ];
 		unsigned rpop[WINSZ];
 		unsigned n, ri;
@@ -102,5 +103,6 @@ void _smt_pge(void);
 void _smt_error(unsigned mask);
 void _smt_freesfx(void);
 int _smt_initsfx(int *argc, char **argv);
+int _smt_nogl(void);
 
 #endif

@@ -5,15 +5,18 @@
 #include <AL/al.h>
 #include <GL/gl.h>
 
+#define SMT_WIN_DESKTOP 0
 #define SMT_WIN_FULL_SLOW 1
 #define SMT_WIN_FULL_FAST 2
-#define SMT_WIN_VISIBLE 4
-#define SMT_WIN_BORDER 8
-#define SMT_WIN_RESIZE 16
-#define SMT_WIN_MIN 32
-#define SMT_WIN_MAX 64
-#define SMT_WIN_GRAB 128
-#define SMT_WIN_HDPI 256
+#define SMT_WIN_FULL_FAKE 4
+#define SMT_WIN_FULL_MASK 7
+#define SMT_WIN_VISIBLE 8
+#define SMT_WIN_BORDER 16
+#define SMT_WIN_RESIZE 32
+#define SMT_WIN_MIN 64
+#define SMT_WIN_MAX 128
+#define SMT_WIN_GRAB 256
+#define SMT_WIN_HDPI 512
 
 #define SMT_ERR_OVERFLOW 1
 #define SMT_ERR_STATE 2
@@ -93,12 +96,28 @@ struct smtconf {
 
 extern struct smtconf smt;
 
+typedef struct smtTimer {
+	unsigned elapsed, last, next, delay;
+} smtTimer_t;
+
+void smtResett(struct smtTimer *t);
+unsigned smtTickt(struct smtTimer *t);
+unsigned smtSlicet(struct smtTimer *t, unsigned delay);
+unsigned smtSleep(unsigned ms);
+
 unsigned smtOptimg(unsigned options);
+unsigned smtOptsfx(unsigned options);
+unsigned smtTicks(void);
 int smtInit(int *argc, char **argv);
 /** create gl context and make current */
 int smtCreategl(unsigned *gl, unsigned win);
 /** create window with specified arguments */
 int smtCreatewin(unsigned *win, unsigned w, unsigned h, const char *title, unsigned flags);
+/**
+\brief Load sprite from specified path
+
+At least one window and one gl context must be created before you can load images.
+*/
 int smtCreatespr(unsigned *spr, unsigned w, unsigned h, const char *name, GLuint tex, unsigned flags);
 /** attach to window and make current */
 int smtSetgl(unsigned win, unsigned gl);
@@ -112,6 +131,7 @@ int smtGetsizespr(unsigned spr, unsigned *pw, unsigned *ph, unsigned *vw, unsign
 int smtGetsizewin(unsigned win, unsigned *w, unsigned *h);
 int smtGetminwin(unsigned win, unsigned *w, unsigned *h);
 int smtGetmaxwin(unsigned win, unsigned *w, unsigned *h);
+int smtGetPoswin(unsigned win, int *x, int *y);
 char *smtGetclip(void);
 /* setters */
 int smtSetsizewin(unsigned win, unsigned w, unsigned h);
@@ -119,6 +139,14 @@ int smtSetminwin(unsigned win, unsigned w, unsigned h);
 int smtSetmaxwin(unsigned win, unsigned w, unsigned h);
 int smtSetcurs(unsigned cur, unsigned state);
 int smtSetclip(const char *str);
+
+/** switch between windowed(=desktop) and fullscreen modes */
+int smtModewin(unsigned win, unsigned mode);
+int smtTitle(unsigned win, const char *title);
+unsigned smtDisplayCount(void);
+int smtDisplayBounds(unsigned index, int *x, int *y, unsigned *w, unsigned *h);
+/** determine on which display the window is located */
+int smtDisplaywin(unsigned win, unsigned *display);
 
 unsigned smtPollev(void);
 unsigned smtQwerty(void);

@@ -90,6 +90,14 @@ void _smt_pge(void)
 	}
 }
 
+int _smt_nogl(void)
+{
+	unsigned win = _smt.gl.curw;
+	if (!(_smt.win.state[win] & SMT_WIN_INIT))
+		return SMT_ERR_STATE;
+	return !!SDL_GL_MakeCurrent(_smt.win.scr[win], NULL);
+}
+
 int smtSetgl(unsigned win, unsigned gl)
 {
 	if (win >= WINSZ || gl >= GLSZ)
@@ -102,6 +110,7 @@ int smtSetgl(unsigned win, unsigned gl)
 	if (SDL_GL_MakeCurrent(_smt.win.scr[win], _smt.gl.data[gl]) != 0)
 		return SMT_ERR_STATE;
 	_smt.gl.cur = gl;
+	_smt.gl.curw = win;
 	return 0;
 }
 
@@ -220,6 +229,33 @@ unsigned smtQwerty(void)
 	return key;
 }
 
+static void _smt_drop(void)
+{
+	if (_smt.drop) SDL_free(_smt.drop);
+	_smt.drop = strdup(_smt.ev.drop.file);
+	char *p, *q;
+	unsigned char fst, snd;
+	for (p = q = _smt.drop; *p;) {
+		if (*p == '%' && p[1] && p[1] != '%') {
+			fst = tolower(p[1]);
+			snd = tolower(p[2]);
+			if (fst >= '0' && fst <= '9')
+				fst -= '0';
+			else
+				fst -= 'a' - 10;
+			if (snd >= '0' && snd <= '9')
+				snd -= '0';
+			else
+				snd -= 'a' - 10;
+			*q++ = fst << 4 | snd;
+			p += 3;
+		} else
+			*q++ = *p++;
+	}
+	*q = '\0';
+	smt.drop = _smt.drop;
+}
+
 unsigned smtPollev(void)
 {
 	if (SDL_PollEvent(&_smt.ev) == 0)
@@ -234,8 +270,7 @@ unsigned smtPollev(void)
 		smt.mouse.state = _smt.ev.motion.state;
 		return SMT_EV_MOUSE_MOTION;
 	case SDL_DROPFILE:
-		if (_smt.drop) SDL_free(_smt.drop);
-		smt.drop = _smt.drop = strdup(_smt.ev.drop.file);
+		_smt_drop();
 		return SMT_EV_DROP_FILE;
 	default: return SMT_EV_UNKNOWN;
 	}
