@@ -180,7 +180,7 @@ unsigned _smt_flags2sdl(unsigned flags)
 	return sdl;
 }
 
-int smtModewin(unsigned win, unsigned mode)
+int smtMode(unsigned win, unsigned mode)
 {
 	winchk(win);
 	int x, y;

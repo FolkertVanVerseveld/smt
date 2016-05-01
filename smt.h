@@ -105,6 +105,12 @@ unsigned smtTickt(struct smtTimer *t);
 unsigned smtSlicet(struct smtTimer *t, unsigned delay);
 unsigned smtSleep(unsigned ms);
 
+#define SMT_CTX_GL_OLD 1
+#define SMT_CTX_GL_NEW 2
+
+int smtGlAttru(GLuint opt, GLuint arg);
+int smtGlAttrup(GLuint opt, GLuint *val);
+
 unsigned smtOptimg(unsigned options);
 unsigned smtOptsfx(unsigned options);
 unsigned smtTicks(void);
@@ -141,7 +147,7 @@ int smtSetcurs(unsigned cur, unsigned state);
 int smtSetclip(const char *str);
 
 /** switch between windowed(=desktop) and fullscreen modes */
-int smtModewin(unsigned win, unsigned mode);
+int smtMode(unsigned win, unsigned mode);
 int smtTitle(unsigned win, const char *title);
 unsigned smtDisplayCount(void);
 int smtDisplayBounds(unsigned index, int *x, int *y, unsigned *w, unsigned *h);

@@ -13,10 +13,14 @@ void _smt_freesfx(void)
 	if (_smt.init.sfx & SMT_SFX_ALUT) {
 		smtDbgs("alutExit");
 		alutExit();
-		_smt.al.ctx = NULL;
-		_smt.al.dev = NULL;
-		goto end;
 	}
+	/* alut does not close context and device,
+	so we have to do that ourselves */
+	if (!_smt.al.ctx)
+		_smt.al.ctx = alcGetCurrentContext();
+	if (_smt.al.ctx && !_smt.al.dev)
+		_smt.al.dev = alcGetContextsDevice(_smt.al.ctx);
+	alcMakeContextCurrent(NULL);
 	if (_smt.al.ctx) {
 		alcDestroyContext(_smt.al.ctx);
 		_smt.al.ctx = NULL;
@@ -25,7 +29,6 @@ void _smt_freesfx(void)
 		alcCloseDevice(_smt.al.dev);
 		_smt.al.dev = NULL;
 	}
-end:
 	_smt.init.sfx = 0;
 }
 

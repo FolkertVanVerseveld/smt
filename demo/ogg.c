@@ -3,10 +3,6 @@
 #include <smt/smt.h>
 #include <AL/alut.h>
 
-/*
-AL lib says we have to free a source, but as far as I can tell we can't access the source that has been allocated
-*/
-
 int main(int argc, char **argv)
 {
 	unsigned win, gl;
@@ -41,9 +37,8 @@ int main(int argc, char **argv)
 		}
 		smtSwapgl(win);
 	}
+end:
 	alDeleteSources(1, &src);
 	alDeleteBuffers(1, &buf);
-	alcMakeContextCurrent(NULL);
-end:
 	return 0;
 }
