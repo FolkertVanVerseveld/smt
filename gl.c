@@ -86,3 +86,25 @@ int smtGlAttrup(GLuint opt, GLuint *val)
 fail:
 	return SMT_ERR_STATE;
 }
+
+int smtGlSoftd(GLint val)
+{
+	int v = val ? 0 : 1;
+	if (SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, v))
+		sdl_error();
+	return 0;
+fail:
+	return SMT_ERR_STATE;
+}
+
+int smtGlSoftdp(GLint *val)
+{
+	int v;
+	if (SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &v))
+		sdl_error();
+	v = v ? 0 : 1;
+	if (val) *val = v;
+	return 0;
+fail:
+	return SMT_ERR_STATE;
+}

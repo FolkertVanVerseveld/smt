@@ -110,6 +110,8 @@ unsigned smtSleep(unsigned ms);
 
 int smtGlAttru(GLuint opt, GLuint arg);
 int smtGlAttrup(GLuint opt, GLuint *val);
+int smtGlSoftd(GLint val);
+int smtGlSoftdp(GLint *val);
 
 unsigned smtOptimg(unsigned options);
 unsigned smtOptsfx(unsigned options);
@@ -149,6 +151,12 @@ int smtSetclip(const char *str);
 /** switch between windowed(=desktop) and fullscreen modes */
 int smtMode(unsigned win, unsigned mode);
 int smtTitle(unsigned win, const char *title);
+int smtFocus(unsigned win);
+int smtVisible(unsigned win, int show);
+int smtBorder(unsigned win, int show);
+int smtGrab(unsigned win, int show);
+int smtState(unsigned win, unsigned flags);
+int smtGamma(unsigned win, float bright);
 unsigned smtDisplayCount(void);
 int smtDisplayBounds(unsigned index, int *x, int *y, unsigned *w, unsigned *h);
 /** determine on which display the window is located */

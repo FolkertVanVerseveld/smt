@@ -235,6 +235,66 @@ fail:
 	return SMT_ERR_STATE;
 }
 
+int smtFocus(unsigned win)
+{
+	winchk(win);
+	SDL_RaiseWindow(_smt.win.scr[win]);
+	return 0;
+}
+
+int smtVisible(unsigned win, int show)
+{
+	winchk(win);
+	SDL_Window *scr = _smt.win.scr[win];
+	if (show)
+		SDL_ShowWindow(scr);
+	else
+		SDL_HideWindow(scr);
+	return 0;
+}
+
+int smtBorder(unsigned win, int show)
+{
+	winchk(win);
+	SDL_bool val = show ? SDL_TRUE : SDL_FALSE;
+	SDL_SetWindowBordered(_smt.win.scr[win], val);
+	return 0;
+}
+
+int smtGrab(unsigned win, int show)
+{
+	winchk(win);
+	SDL_bool val = show ? SDL_TRUE : SDL_FALSE;
+	SDL_SetWindowGrab(_smt.win.scr[win], val);
+	return 0;
+}
+
+int smtGamma(unsigned win, float bright)
+{
+	winchk(win);
+	if (SDL_SetWindowBrightness(_smt.win.scr[win], bright))
+		sdl_error();
+	return 0;
+fail:
+	return SMT_ERR_STATE;
+}
+
+int smtState(unsigned win, unsigned flags)
+{
+	winchk(win);
+	SDL_bool val;
+	SDL_Window *scr = _smt.win.scr[win];
+	val = flags & SMT_WIN_GRAB ? SDL_TRUE : SDL_FALSE;
+	SDL_SetWindowGrab(scr, val);
+	val = flags & SMT_WIN_BORDER ? SDL_TRUE : SDL_FALSE;
+	SDL_SetWindowBordered(scr, val);
+	if (flags & SMT_WIN_VISIBLE)
+		SDL_ShowWindow(scr);
+	else
+		SDL_HideWindow(scr);
+	return 0;
+}
+
 int smtCreatewin(unsigned *win, unsigned w, unsigned h, const char *title, unsigned flags)
 {
 	if (_smt.win.n >= WINSZ)
