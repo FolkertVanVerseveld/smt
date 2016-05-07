@@ -10,7 +10,7 @@ void _smt_freecurs(void)
 		}
 }
 
-int smtSetcurs(unsigned this, unsigned state)
+int smtCursor(unsigned this, unsigned state)
 {
 	const SDL_SystemCursor tbl[SMT_CURS_MAX] = {
 		0,

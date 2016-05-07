@@ -61,6 +61,12 @@
 #define SMT_KEY_LEFT 0x1002
 #define SMT_KEY_DOWN 0x1003
 
+#define SMT_MOUSE_LEFT 1
+#define SMT_MOUSE_MIDDLE 2
+#define SMT_MOUSE_RIGHT 4
+#define SMT_MOUSE_EXTRA0 8
+#define SMT_MOUSE_EXTRA1 16
+
 #define SMT_MOD_LSHIFT 1
 #define SMT_MOD_RSHIFT 2
 #define SMT_MOD_SHIFT (SMT_MOD_LSHIFT|SMT_MOD_RSHIFT)
@@ -135,18 +141,18 @@ int smtFreegl(unsigned index);
 int smtFreewin(unsigned index);
 int smtFreespr(unsigned spr);
 /* getters */
-int smtGetsizespr(unsigned spr, unsigned *pw, unsigned *ph, unsigned *vw, unsigned *vh);
-int smtGetsizewin(unsigned win, unsigned *w, unsigned *h);
-int smtGetminwin(unsigned win, unsigned *w, unsigned *h);
-int smtGetmaxwin(unsigned win, unsigned *w, unsigned *h);
+int smtGetSizespr(unsigned spr, unsigned *pw, unsigned *ph, unsigned *vw, unsigned *vh);
+int smtGetSizewin(unsigned win, unsigned *w, unsigned *h);
+int smtGetMinwin(unsigned win, unsigned *w, unsigned *h);
+int smtGetMaxwin(unsigned win, unsigned *w, unsigned *h);
 int smtGetPoswin(unsigned win, int *x, int *y);
-char *smtGetclip(void);
+char *smtClip(void);
 /* setters */
-int smtSetsizewin(unsigned win, unsigned w, unsigned h);
-int smtSetminwin(unsigned win, unsigned w, unsigned h);
-int smtSetmaxwin(unsigned win, unsigned w, unsigned h);
-int smtSetcurs(unsigned cur, unsigned state);
-int smtSetclip(const char *str);
+int smtSizewin(unsigned win, unsigned w, unsigned h);
+int smtMinwin(unsigned win, unsigned w, unsigned h);
+int smtMaxwin(unsigned win, unsigned w, unsigned h);
+int smtCursor(unsigned cursor, unsigned state);
+int smtClips(const char *str);
 
 /** switch between windowed(=desktop) and fullscreen modes */
 int smtMode(unsigned win, unsigned mode);

@@ -28,7 +28,7 @@ int smtDisplaywin(unsigned win, unsigned *display)
 	int x, y;
 	unsigned w, h;
 	SDL_Rect bounds;
-	if (smtGetPoswin(win, &x, &y) || smtGetsizewin(win, &w, &h))
+	if (smtGetPoswin(win, &x, &y) || smtGetSizewin(win, &w, &h))
 		return SMT_ERR_STATE;
 	x += w / 2;
 	for (i = 0, n = smtDisplayCount(); i < n; ++i) {
@@ -66,7 +66,7 @@ int smtGetPoswin(unsigned win, int *x, int *y)
 	return 0;
 }
 
-int smtGetsizewin(unsigned win, unsigned *width, unsigned *height)
+int smtGetSizewin(unsigned win, unsigned *width, unsigned *height)
 {
 	winchk(win);
 	int w, h, wp, hp;
@@ -86,7 +86,7 @@ int smtGetsizewin(unsigned win, unsigned *width, unsigned *height)
 	return 0;
 }
 
-int smtSetsizewin(unsigned win, unsigned w, unsigned h)
+int smtSizewin(unsigned win, unsigned w, unsigned h)
 {
 	winchk(win);
 	if (w < 1 || h < 1)
@@ -97,7 +97,7 @@ int smtSetsizewin(unsigned win, unsigned w, unsigned h)
 	return 0;
 }
 
-int smtGetminwin(unsigned win, unsigned *width, unsigned *height)
+int smtGetMinwin(unsigned win, unsigned *width, unsigned *height)
 {
 	winchk(win);
 	int w, h;
@@ -109,7 +109,7 @@ int smtGetminwin(unsigned win, unsigned *width, unsigned *height)
 	return 0;
 }
 
-int smtSetminwin(unsigned win, unsigned w, unsigned h)
+int smtMinwin(unsigned win, unsigned w, unsigned h)
 {
 	winchk(win);
 	if (w < 1 || h < 1)
@@ -123,7 +123,7 @@ int smtSetminwin(unsigned win, unsigned w, unsigned h)
 	return 0;
 }
 
-int smtGetmaxwin(unsigned win, unsigned *width, unsigned *height)
+int smtGetMaxwin(unsigned win, unsigned *width, unsigned *height)
 {
 	winchk(win);
 	int w, h;
@@ -135,7 +135,7 @@ int smtGetmaxwin(unsigned win, unsigned *width, unsigned *height)
 	return 0;
 }
 
-int smtSetmaxwin(unsigned win, unsigned w, unsigned h)
+int smtMaxwin(unsigned win, unsigned w, unsigned h)
 {
 	winchk(win);
 	if (w < 1 || h < 1)

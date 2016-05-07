@@ -311,12 +311,12 @@ void smtExit(int status)
 	exit(status);
 }
 
-char *smtGetclip(void)
+char *smtClip(void)
 {
 	return SDL_GetClipboardText();
 }
 
-int smtSetclip(const char *str)
+int smtClips(const char *str)
 {
 	return SDL_SetClipboardText(str);
 }

@@ -144,7 +144,7 @@ fail:
 	return SMT_ERR_STATE;
 }
 
-int smtGetsizespr(unsigned spr, unsigned *pw, unsigned *ph, unsigned *vw, unsigned *vh)
+int smtGetSizespr(unsigned spr, unsigned *pw, unsigned *ph, unsigned *vw, unsigned *vh)
 {
 	sprchk(spr);
 	if (pw) *pw = _smt.spr.w[spr];
