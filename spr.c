@@ -17,20 +17,31 @@ unsigned smtOptimg(unsigned opt)
 #define PALSZ 256
 static void _smt_setpal(SDL_Surface *surf)
 {
-	GLfloat r[PALSZ], g[PALSZ], b[PALSZ];
+	GLfloat r[PALSZ], g[PALSZ], b[PALSZ], a[PALSZ];
 	int i, max = PALSZ;
 	if (surf->format->palette->ncolors < max)
 		max = surf->format->palette->ncolors;
+	smtDbgf("palsz: %i\n", max);
 	for (i = 0; i < max; ++i) {
 		r[i] = (GLfloat)surf->format->palette->colors[i].r/PALSZ;
 		g[i] = (GLfloat)surf->format->palette->colors[i].g/PALSZ;
 		b[i] = (GLfloat)surf->format->palette->colors[i].b/PALSZ;
+		a[i] = (GLfloat)surf->format->palette->colors[i].a/PALSZ;
 	}
 	/* nvidia needs this, dunno if this is nvidia specific */
+	GLenum e;
+	#define chk do{\
+			if((e=glGetError())!=GL_NO_ERROR)\
+			fprintf(stderr,"%u err: %x\n", (unsigned)__LINE__, e);\
+		}while(0)
+	chk;
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelTransferi(GL_MAP_COLOR, GL_TRUE);
-	glPixelMapfv(GL_PIXEL_MAP_I_TO_R, max, r);
-	glPixelMapfv(GL_PIXEL_MAP_I_TO_G, max, g);
-	glPixelMapfv(GL_PIXEL_MAP_I_TO_B, max, b);
+	glPixelMapfv(GL_PIXEL_MAP_R_TO_R, max, r);
+	glPixelMapfv(GL_PIXEL_MAP_G_TO_G, max, g);
+	glPixelMapfv(GL_PIXEL_MAP_B_TO_B, max, b);
+	glPixelMapfv(GL_PIXEL_MAP_A_TO_A, max, a);
+	chk;
 }
 
 static inline int _smt_ispow2(unsigned x)
@@ -42,11 +53,13 @@ static void _smt_maptex(SDL_Surface *surf, GLuint tex)
 {
 	GLint internal;
 	GLenum format;
+	glPixelTransferi(GL_MAP_COLOR, GL_FALSE);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	if (surf->format->palette) {
+		smtDbgs("use colpal");
 		_smt_setpal(surf);
-		internal = GL_RGBA;
-		format = GL_COLOR_INDEX;
+		internal = GL_RGB;
+		format = GL_RGB;//GL_COLOR_INDEX;
 	} else {
 		/*
 		jpeg *needs* GL_RGB or else we get a segfault

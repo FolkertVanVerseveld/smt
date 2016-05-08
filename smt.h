@@ -5,6 +5,8 @@
 #include <AL/al.h>
 #include <GL/gl.h>
 
+#define SMT_RES_INVALID ((unsigned)-1)
+
 #define SMT_WIN_DESKTOP 0
 #define SMT_WIN_FULL_SLOW 1
 #define SMT_WIN_FULL_FAST 2
