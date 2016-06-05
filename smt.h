@@ -1,6 +1,10 @@
 #ifndef SMT_SMT_H
 #define SMT_SMT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <AL/al.h>
 #include <GL/gl.h>
@@ -30,7 +34,10 @@
 #define SMT_EV_KEY_DOWN 2
 #define SMT_EV_KEY_UP 3
 #define SMT_EV_MOUSE_MOTION 4
-#define SMT_EV_DROP_FILE 5
+#define SMT_EV_MOUSE_DOWN 5
+#define SMT_EV_MOUSE_UP 6
+#define SMT_EV_MOUSE_SCROLL 7
+#define SMT_EV_DROP_FILE 8
 #define SMT_EV_UNKNOWN 255
 
 #define SMT_SPR_RESIZE 1
@@ -67,7 +74,7 @@
 #define SMT_MOUSE_MIDDLE 2
 #define SMT_MOUSE_RIGHT 4
 #define SMT_MOUSE_EXTRA0 8
-#define SMT_MOUSE_EXTRA1 16
+#define SMT_MOUSE_EXTRA1 9
 
 #define SMT_MOD_LSHIFT 1
 #define SMT_MOD_RSHIFT 2
@@ -96,8 +103,10 @@ struct smtconf {
 		unsigned scan, virt;
 	} kbp;
 	struct {
-		unsigned x, y;
-		unsigned state;
+		int x, y;
+		unsigned state, win;
+		unsigned down, up;
+		int sx, sy;
 	} mouse;
 	char *drop;
 };
@@ -174,5 +183,9 @@ unsigned smtPollev(void);
 unsigned smtQwerty(void);
 int smtOggfv(const char *name, char **buf, size_t *count, ALenum *format, ALsizei *freq);
 void smtExit(int status) __attribute__ ((noreturn));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

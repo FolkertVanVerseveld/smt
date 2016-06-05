@@ -29,10 +29,10 @@
 
 #define SMT_SPR_INIT 1
 
-#define ERRSZ 16
-#define WINSZ 32
+#define ERRSZ 32
+#define WINSZ 16
 #define GLSZ 8
-#define SPRSZ 128
+#define SPRSZ 512
 
 struct _smtconf {
 	struct {

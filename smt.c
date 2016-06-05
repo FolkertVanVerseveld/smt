@@ -256,6 +256,23 @@ static void _smt_drop(void)
 	smt.drop = _smt.drop;
 }
 
+static inline void _smt_mousewin(void)
+{
+	SDL_Window *win = SDL_GetWindowFromID(_smt.ev.motion.windowID);
+	if (!win) {
+		smt.mouse.win = SMT_RES_INVALID;
+		return;
+	}
+	/* TODO use binary search */
+	for (unsigned i = 0; i < _smt.win.n; ++i) {
+		if ((_smt.win.flags[i] & SMT_WIN_INIT) && _smt.win.scr[i] == win) {
+			smtDbgf("motion win: %u\n", i);
+			smt.mouse.win = i;
+			return;
+		}
+	}
+}
+
 unsigned smtPollev(void)
 {
 	if (SDL_PollEvent(&_smt.ev) == 0)
@@ -268,7 +285,25 @@ unsigned smtPollev(void)
 		smt.mouse.x = _smt.ev.motion.x;
 		smt.mouse.y = _smt.ev.motion.y;
 		smt.mouse.state = _smt.ev.motion.state;
+		_smt_mousewin();
 		return SMT_EV_MOUSE_MOTION;
+	case SDL_MOUSEBUTTONDOWN:
+		smt.mouse.x = _smt.ev.button.x;
+		smt.mouse.y = _smt.ev.button.y;
+		smt.mouse.down = _smt.ev.button.button;
+		_smt_mousewin();
+		return SMT_EV_MOUSE_DOWN;
+	case SDL_MOUSEBUTTONUP:
+		smt.mouse.x = _smt.ev.button.x;
+		smt.mouse.y = _smt.ev.button.y;
+		smt.mouse.up = _smt.ev.button.button;
+		_smt_mousewin();
+		return SMT_EV_MOUSE_UP;
+	case SDL_MOUSEWHEEL:
+		smt.mouse.sx = _smt.ev.wheel.x;
+		smt.mouse.sy = _smt.ev.wheel.y;
+		_smt_mousewin();
+		return SMT_EV_MOUSE_SCROLL;
 	case SDL_DROPFILE:
 		_smt_drop();
 		return SMT_EV_DROP_FILE;
