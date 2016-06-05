@@ -1,9 +1,15 @@
+/* load and show a sprite */
+#include <stdio.h>
 #include <smt/smt.h>
 
 int main(int argc, char **argv) {
 	int ret = 1;
 	ret = smtInit(&argc, argv);
 	if (ret != 0) goto fail;
+	if (argc < 2) {
+		fprintf(stderr, "usage: %s image\n", argc > 0 ? argv[0] : "spr");
+		return 1;
+	}
 	unsigned win, gl, spr;
 	ret = smtCreatewin(&win, 400, 300, "logo", SMT_WIN_VISIBLE | SMT_WIN_BORDER);
 	if (ret != 0) goto fail;
@@ -11,7 +17,7 @@ int main(int argc, char **argv) {
 	if (ret != 0) goto fail;
 	GLuint tex;
 	glGenTextures(1, &tex);
-	ret = smtCreatespr(&spr, 0, 0, "/home/methos/c/gut/demo/vim.png", tex, 0);
+	ret = smtCreatespr(&spr, 0, 0, argv[1], tex, 0);
 	if (ret != 0) goto fail;
 	while (1) {
 		unsigned ev;

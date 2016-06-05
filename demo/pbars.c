@@ -1,3 +1,4 @@
+/* draw pseudo 1D plasma bars */
 #include <smt/smt.h>
 #include <stdio.h>
 #include <stdlib.h>

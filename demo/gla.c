@@ -1,3 +1,4 @@
+/* print OpenGL attributes */
 #include <smt/smt.h>
 #include <stdio.h>
 

@@ -1,3 +1,4 @@
+/* do nothing forever */
 #include <smt/smt.h>
 
 int main(int argc, char **argv) {

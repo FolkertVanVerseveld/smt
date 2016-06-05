@@ -1,3 +1,4 @@
+/* flash like crazy and toggle between display modes */
 #include <smt/smt.h>
 #include <stdio.h>
 #include <stdlib.h>

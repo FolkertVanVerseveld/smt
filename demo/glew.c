@@ -1,3 +1,4 @@
+/* draw blue triangle using shaders */
 #include <GL/glew.h>
 #include <smt/smt.h>
 #include <stdio.h>

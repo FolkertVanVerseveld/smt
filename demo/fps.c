@@ -1,3 +1,4 @@
+/* compute frame rate each 5 frames and show it */
 #include <smt/smt.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,3 +1,4 @@
+/* create and destroy window */
 #include <smt/smt.h>
 
 int main(int argc, char **argv) {

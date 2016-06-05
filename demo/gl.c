@@ -1,3 +1,4 @@
+/* create and destroy gl context */
 #include <smt/smt.h>
 
 int main(int argc, char **argv) {

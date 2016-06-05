@@ -1,3 +1,4 @@
+/* play sine wave at 440Hz */
 #include <stdio.h>
 #include <stdlib.h>
 #include <smt/smt.h>
@@ -5,19 +6,21 @@
 
 unsigned win, gl;
 
-#define SRC_INVALID ((ALuint)-1)
-#define BUF_INVALID ((ALuint)-1)
+#ifdef AL_INVALID
+#undef AL_INVALID
+#endif
+#define AL_INVALID ((ALuint)-1)
 
-ALuint src = SRC_INVALID;
-ALuint buf = BUF_INVALID;
+ALuint src = AL_INVALID;
+ALuint buf = AL_INVALID;
 
 static inline void cleanup(void)
 {
 	static unsigned freed = 0;
 	if (!freed) freed = 1;
-	if (buf != BUF_INVALID)
+	if (buf != AL_INVALID)
 		alDeleteBuffers(1, &buf);
-	if (src != SRC_INVALID)
+	if (src != AL_INVALID)
 		alDeleteSources(1, &src);
 	smtFreegl(gl);
 	smtFreewin(win);

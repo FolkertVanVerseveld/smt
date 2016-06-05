@@ -1,3 +1,4 @@
+/* initialize SMT and cleanup */
 #include <smt/smt.h>
 
 int main(int argc, char **argv) {
