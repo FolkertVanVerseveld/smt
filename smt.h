@@ -46,25 +46,6 @@ extern "C" {
 #define SMT_MIN_TEXTURE_SIZE 2
 #define SMT_MAX_TEXTURE_SIZE 2048
 
-#define SMT_CURS_DEFAULT 0
-#define SMT_CURS_ARROW 1
-#define SMT_CURS_BEAM 2
-#define SMT_CURS_WAIT 3
-#define SMT_CURS_CROSSHAIR 4
-#define SMT_CURS_WAITARROW 5
-#define SMT_CURS_SIZENWSE 6
-#define SMT_CURS_SIZENESW 7
-#define SMT_CURS_SIZEWE 8
-#define SMT_CURS_SIZENS 9
-#define SMT_CURS_SIZEALL 10
-#define SMT_CURS_NO 11
-#define SMT_CURS_HAND 12
-#define SMT_CURS_MAX 13
-
-#define SMT_CURS_SHOW 0
-#define SMT_CURS_HIDE 1
-#define SMT_CURS_TOGGLE 2
-
 #define SMT_KEY_RIGHT 0x1000
 #define SMT_KEY_UP 0x1001
 #define SMT_KEY_LEFT 0x1002
@@ -117,23 +98,28 @@ typedef struct smtTimer {
 	unsigned elapsed, last, next, delay;
 } smtTimer_t;
 
+/* timing */
 void smtResett(struct smtTimer *t);
 unsigned smtTickt(struct smtTimer *t);
 unsigned smtSlicet(struct smtTimer *t, unsigned delay);
 unsigned smtSleep(unsigned ms);
+unsigned smtTicks(void);
 
 #define SMT_CTX_GL_OLD 1
 #define SMT_CTX_GL_NEW 2
 
+/* startup/shutdown */
+int smtInit(int *argc, char **argv);
+void smtExit(int status) __attribute__ ((noreturn));
+
+/* OpenGL */
 int smtGlAttru(GLuint opt, GLuint arg);
 int smtGlAttrup(GLuint opt, GLuint *val);
 int smtGlSoftd(GLint val);
 int smtGlSoftdp(GLint *val);
-
+/* smt configuration routines */
 unsigned smtOptimg(unsigned options);
 unsigned smtOptsfx(unsigned options);
-unsigned smtTicks(void);
-int smtInit(int *argc, char **argv);
 /** create gl context and make current */
 int smtCreategl(unsigned *gl, unsigned win);
 /** create window with specified arguments */
@@ -158,13 +144,34 @@ int smtGetMinwin(unsigned win, unsigned *w, unsigned *h);
 int smtGetMaxwin(unsigned win, unsigned *w, unsigned *h);
 int smtGetPoswin(unsigned win, int *x, int *y);
 char *smtClip(void);
-/* setters */
+
+/* window boundary routines */
 int smtSizewin(unsigned win, unsigned w, unsigned h);
 int smtMinwin(unsigned win, unsigned w, unsigned h);
 int smtMaxwin(unsigned win, unsigned w, unsigned h);
-int smtCursor(unsigned cursor, unsigned state);
-int smtClips(const char *str);
 
+/* cursor type */
+#define SMT_CURS_DEFAULT 0
+#define SMT_CURS_ARROW 1
+#define SMT_CURS_BEAM 2
+#define SMT_CURS_WAIT 3
+#define SMT_CURS_CROSSHAIR 4
+#define SMT_CURS_WAITARROW 5
+#define SMT_CURS_SIZENWSE 6
+#define SMT_CURS_SIZENESW 7
+#define SMT_CURS_SIZEWE 8
+#define SMT_CURS_SIZENS 9
+#define SMT_CURS_SIZEALL 10
+#define SMT_CURS_NO 11
+#define SMT_CURS_HAND 12
+#define SMT_CURS_MAX 13
+/* cursor state */
+#define SMT_CURS_SHOW 0
+#define SMT_CURS_HIDE 1
+#define SMT_CURS_TOGGLE 2
+
+int smtCursor(unsigned type, unsigned state);
+int smtClips(const char *str);
 /** switch between windowed(=desktop) and fullscreen modes */
 int smtMode(unsigned win, unsigned mode);
 int smtTitle(unsigned win, const char *title);
@@ -174,15 +181,26 @@ int smtBorder(unsigned win, int show);
 int smtGrab(unsigned win, int show);
 int smtState(unsigned win, unsigned flags);
 int smtGamma(unsigned win, float bright);
+
+/* display routines */
+
 unsigned smtDisplayCount(void);
 int smtDisplayBounds(unsigned index, int *x, int *y, unsigned *w, unsigned *h);
 /** determine on which display the window is located */
 int smtDisplaywin(unsigned win, unsigned *display);
 
+/* messages */
+#define SMT_MSG_ERR 0
+#define SMT_MSG_WARN 1
+#define SMT_MSG_INFO 2
+int smtMsg(int type, unsigned win, const char *title, const char *message);
+
+/* event handlers/wrappers */
 unsigned smtPollev(void);
 unsigned smtQwerty(void);
+
+/* audio routines */
 int smtOggfv(const char *name, char **buf, size_t *count, ALenum *format, ALsizei *freq);
-void smtExit(int status) __attribute__ ((noreturn));
 
 #ifdef __cplusplus
 }

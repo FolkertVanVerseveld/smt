@@ -360,3 +360,19 @@ int smtDisplayBounds(unsigned i, int *x, int *y, unsigned *w, unsigned *h)
 	if (h) *h = bounds.h;
 	return 0;
 }
+
+int smtMsg(int type, unsigned win, const char *title, const char *message)
+{
+	Uint32 flags;
+	switch (type) {
+	case SMT_MSG_WARN: flags = SDL_MESSAGEBOX_WARNING; break;
+	case SMT_MSG_INFO: flags = SDL_MESSAGEBOX_INFORMATION; break;
+	default: flags = SDL_MESSAGEBOX_ERROR;
+	}
+	SDL_Window *scr = NULL;
+	if (win < WINSZ && (_smt.win.state[win] & SMT_WIN_INIT))
+		scr = _smt.win.scr[win];
+	if (SDL_ShowSimpleMessageBox(flags, title, message, scr))
+		return SMT_ERR_STATE;
+	return 0;
+}
