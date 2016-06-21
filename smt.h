@@ -53,7 +53,7 @@ extern "C" {
 
 #define SMT_MOUSE_LEFT 1
 #define SMT_MOUSE_MIDDLE 2
-#define SMT_MOUSE_RIGHT 4
+#define SMT_MOUSE_RIGHT 3
 #define SMT_MOUSE_EXTRA0 8
 #define SMT_MOUSE_EXTRA1 9
 
