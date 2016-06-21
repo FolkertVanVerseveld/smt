@@ -376,3 +376,24 @@ int smtMsg(int type, unsigned win, const char *title, const char *message)
 		return SMT_ERR_STATE;
 	return 0;
 }
+
+unsigned smtScreensave(unsigned state)
+{
+	switch (state) {
+	case SMT_SCREEN_SAVE_OFF:
+		SDL_DisableScreenSaver();
+		break;
+	case SMT_SCREEN_SAVE_ON:
+		SDL_EnableScreenSaver();
+		break;
+	case SMT_SCREEN_SAVE_QUERY:
+		break;
+	default:
+		if (SDL_IsScreenSaverEnabled())
+			SDL_DisableScreenSaver();
+		else
+			SDL_EnableScreenSaver();
+		break;
+	}
+	return SDL_IsScreenSaverEnabled() ? SMT_SCREEN_SAVE_ON : SMT_SCREEN_SAVE_OFF;
+}

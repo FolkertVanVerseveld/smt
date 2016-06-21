@@ -112,6 +112,14 @@ unsigned smtTicks(void);
 int smtInit(int *argc, char **argv);
 void smtExit(int status) __attribute__ ((noreturn));
 
+#define SMT_SCREEN_SAVE_OFF 0
+#define SMT_SCREEN_SAVE_ON 1
+#define SMT_SCREEN_SAVE_TOGGLE 2
+#define SMT_SCREEN_SAVE_QUERY 3
+
+/** apply screen save state and return new state */
+unsigned smtScreensave(unsigned state);
+
 /* OpenGL */
 int smtGlAttru(GLuint opt, GLuint arg);
 int smtGlAttrup(GLuint opt, GLuint *val);
