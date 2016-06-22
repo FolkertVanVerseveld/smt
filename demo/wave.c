@@ -6,21 +6,18 @@
 
 unsigned win, gl;
 
-#ifdef AL_INVALID
-#undef AL_INVALID
-#endif
-#define AL_INVALID ((ALuint)-1)
+#define AL_RES_INVALID ((ALuint)-1)
 
-ALuint src = AL_INVALID;
-ALuint buf = AL_INVALID;
+ALuint src = AL_RES_INVALID;
+ALuint buf = AL_RES_INVALID;
 
 static inline void cleanup(void)
 {
 	static unsigned freed = 0;
 	if (!freed) freed = 1;
-	if (buf != AL_INVALID)
+	if (buf != AL_RES_INVALID)
 		alDeleteBuffers(1, &buf);
-	if (src != AL_INVALID)
+	if (src != AL_RES_INVALID)
 		alDeleteSources(1, &src);
 	smtFreegl(gl);
 	smtFreewin(win);
