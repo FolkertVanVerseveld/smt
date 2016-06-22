@@ -1,10 +1,23 @@
-#include <assert.h>
+/*
+compute and draw waveform in real time
+redefine wave_phase to the wave form routine.
+provided examples are:
+
+name         | formula
+-------------+--------------------------------------
+half sinusoid| amplitude = abs(sin(phi))
+sinusoid     | amplitude = sin(2 * phi)
+sawtooth     | amplitude = 2 * phi - 1
+square       | amplitude is 1 if phi >= 0.5, else -1
+noise        | amplitude is pseudo random
+
+where phi lies in range: [0, pi]
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
 #include <math.h>
-#include <endian.h>
 #include <smt/smt.h>
 #include <AL/alut.h>
 
@@ -54,7 +67,7 @@ static void cleanup(void)
 	}
 }
 
-#define sampleFrequency 44100.0
+#define SAMPLE_FREQUENCY 44100.0
 
 /* works best for durations >= 0.1 seconds */
 double wave_noise(double phase)
@@ -94,40 +107,26 @@ static void waveform_free(struct waveform *wave)
 
 static size_t waveform_init(struct waveform *wave, ALfloat frequency, ALfloat phase, ALfloat duration)
 {
-	double sampleDuration, lastPhase, numSamplesD;
-	size_t numBytes, numSamples, i;
-	ALvoid *blk = NULL;
-	size_t wave_pos = 0, length = 0;
-	int16_t *dst_w;
-	sampleDuration = floor((frequency * duration) + 0.5) / frequency;
-	numSamplesD = floor(sampleDuration * sampleFrequency);
-	numSamples = (size_t)numSamplesD;
-	numBytes = numSamples * sizeof(int16_t);
-	blk = malloc(numBytes);
+	size_t samples, i, wave_pos = 0, length = 0, blksz;
+	int16_t *blk = NULL;
+	samples = (size_t)floor(round(frequency * duration) / frequency * SAMPLE_FREQUENCY);
+	blk = malloc(blksz = samples * sizeof(int16_t));
 	if (!blk) goto fail;
-	phase /= 100;
-	lastPhase = phase - frequency / sampleFrequency;
-	lastPhase -= floor(lastPhase);
-	dst_w = blk;
-	for (i = 0; i < numSamples; ++i) {
-		double p, currentPhase, amplitude;
-		p = phase + frequency * (double)i / sampleFrequency;
-		currentPhase = p - floor(p);
-		amplitude = wave_phase(currentPhase);
-		dst_w[wave_pos++] = ((int16_t)(amplitude * 32767));
+	for (i = 0; i < samples; ++i) {
+		double p = phase + frequency * (double)i / SAMPLE_FREQUENCY;
+		blk[wave_pos++] = ((int16_t)(wave_phase(p - floor(p)) * 32767));
 	}
 	wave->data = blk;
-	wave->length = wave_pos * sizeof(int16_t);
+	wave->length = blksz;
 	wave->channels = 1;
 	wave->format = AL_FORMAT_MONO16;
 	wave->sample_bits = 16;
-	wave->sample_freq = sampleFrequency;
-	length = numBytes;
+	wave->sample_freq = SAMPLE_FREQUENCY;
 fail:
-	if (!length) {
+	if (!blksz) {
 		if (blk) free(blk);
 	}
-	return length;
+	return blksz;
 }
 
 static inline void init(void)
