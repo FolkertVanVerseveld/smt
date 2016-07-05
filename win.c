@@ -1,5 +1,5 @@
 #include "_smt.h"
-#include <assert.h>
+#include <SDL2/SDL_image.h>
 
 #define winchk(i) do{\
 	if (i >= WINSZ)\
@@ -42,6 +42,16 @@ int smtDisplaywin(unsigned win, unsigned *display)
 	return SMT_ERR_STATE;
 }
 
+int smtIconf(unsigned win, const char *path)
+{
+	winchk(win);
+	SDL_Surface *icon = IMG_Load(path);
+	if (!icon) return SMT_ERR_STATE;
+	SDL_SetWindowIcon(_smt.win.scr[win], icon);
+	SDL_FreeSurface(icon);
+	return 0;
+}
+
 static inline int _smt_getbnds(unsigned win, SDL_Rect *bounds)
 {
 	unsigned display;
@@ -50,40 +60,48 @@ static inline int _smt_getbnds(unsigned win, SDL_Rect *bounds)
 	return 0;
 }
 
+static inline int _smt_win_boundsp(unsigned win, int *x, int *y, unsigned *w, unsigned *h)
+{
+	int wx, wy, xp, yp;
+	int ww, wh, wp, hp;
+	SDL_Window *scr = _smt.win.scr[win];
+	if (w || h) {
+		ww = wp = _smt.win.physic[win].w;
+		wh = hp = _smt.win.physic[win].h;
+		SDL_GetWindowSize(scr, &wp, &hp);
+		if (wp < 0 || hp < 0)
+			return SMT_ERR_OVERFLOW;
+		if (w) *w = wp;
+		if (h) *h = hp;
+		if (ww != wp || wh != hp) {
+			_smt.win.physic[win].w = wp;
+			_smt.win.physic[win].h = hp;
+		}
+	}
+	if (x || y) {
+		wx = _smt.win.physic[win].x;
+		wy = _smt.win.physic[win].y;
+		SDL_GetWindowPosition(scr, &xp, &yp);
+		if (x) *x = xp;
+		if (y) *y = yp;
+		if (wx != xp || wy != yp) {
+			_smt.win.physic[win].x = xp;
+			_smt.win.physic[win].y = yp;
+		}
+	}
+	return 0;
+}
+
 int smtGetPoswin(unsigned win, int *x, int *y)
 {
 	winchk(win);
-	int wx, wy, xp, yp;
-	wx = _smt.win.physic[win].x;
-	wy = _smt.win.physic[win].y;
-	SDL_GetWindowPosition(_smt.win.scr[win], &xp, &yp);
-	if (wx != xp || wy != yp) {
-		_smt.win.physic[win].x = xp;
-		_smt.win.physic[win].y = yp;
-	}
-	if (x) *x = xp;
-	if (y) *y = yp;
-	return 0;
+	return _smt_win_boundsp(win, x, y, NULL, NULL);
 }
 
 int smtGetSizewin(unsigned win, unsigned *width, unsigned *height)
 {
 	winchk(win);
-	int w, h, wp, hp;
-	SDL_Window *scr;
-	w = wp = _smt.win.physic[win].w;
-	h = hp = _smt.win.physic[win].h;
-	scr = _smt.win.scr[win];
-	SDL_GetWindowSize(scr, &wp, &hp);
-	if (wp < 0 || hp < 0)
-		return SMT_ERR_OVERFLOW;
-	if (width) *width = wp;
-	if (height) *height = hp;
-	if (w == wp && h == hp)
-		return 0;
-	_smt.win.physic[win].w = wp;
-	_smt.win.physic[win].h = hp;
-	return 0;
+	return _smt_win_boundsp(win, NULL, NULL, width, height);
 }
 
 int smtSizewin(unsigned win, unsigned w, unsigned h)
@@ -396,4 +414,40 @@ unsigned smtScreensave(unsigned state)
 		break;
 	}
 	return SDL_IsScreenSaverEnabled() ? SMT_SCREEN_SAVE_ON : SMT_SCREEN_SAVE_OFF;
+}
+
+int smtPos(unsigned win, int x, int y)
+{
+	winchk(win);
+	SDL_SetWindowPosition(_smt.win.scr[win], x, y);
+	return 0;
+}
+
+static inline void _smt_win_bounds(SDL_Window *scr, int x, int y, unsigned w, unsigned h)
+{
+	SDL_SetWindowPosition(scr, x, y);
+	SDL_SetWindowSize(scr, w, h);
+}
+
+int smtBounds(unsigned win, int x, int y, unsigned w, unsigned h)
+{
+	winchk(win);
+	_smt_win_bounds(_smt.win.scr[win], x, y, w, h);
+	return 0;
+}
+
+int smtRelBounds(unsigned win, unsigned display, int x, int y, unsigned w, unsigned h)
+{
+	int dx, dy, ret;
+	winchk(win);
+	ret = smtDisplayBounds(display, &dx, &dy, NULL, NULL);
+	if (ret) return ret;
+	_smt_win_bounds(_smt.win.scr[win], dx + x, dy + y, w, h);
+	return 0;
+}
+
+int smtBoundsp(unsigned win, int *x, int *y, unsigned *w, unsigned *h)
+{
+	winchk(win);
+	return _smt_win_boundsp(win, x, y, w, h);
 }

@@ -132,6 +132,7 @@ unsigned smtOptsfx(unsigned options);
 int smtCreategl(unsigned *gl, unsigned win);
 /** create window with specified arguments */
 int smtCreatewin(unsigned *win, unsigned w, unsigned h, const char *title, unsigned flags);
+int smtIconf(unsigned win, const char *path);
 /**
 \brief Load sprite from specified path
 
@@ -154,6 +155,10 @@ int smtGetPoswin(unsigned win, int *x, int *y);
 char *smtClip(void);
 
 /* window boundary routines */
+int smtPos(unsigned win, int x, int y);
+int smtBounds(unsigned win, int x, int y, unsigned w, unsigned h);
+int smtBoundsp(unsigned win, int *x, int *y, unsigned *w, unsigned *h);
+int smtRelBounds(unsigned win, unsigned display, int x, int y, unsigned w, unsigned h);
 int smtSizewin(unsigned win, unsigned w, unsigned h);
 int smtMinwin(unsigned win, unsigned w, unsigned h);
 int smtMaxwin(unsigned win, unsigned w, unsigned h);
