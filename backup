@@ -1,0 +1,6 @@
+#!/bin/bash -e
+make clean
+cd demo && make clean && cd ..
+dir="${PWD##*/}"
+cd ..
+tar jcf "$dir".tar.xz "$dir"

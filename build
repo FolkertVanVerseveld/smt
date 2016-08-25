@@ -4,7 +4,7 @@ if hash colorgcc 2>/dev/null; then
 	CC=colorgcc
 fi
 cstd='-std=gnu99'
-CFLAGS="-Wall -Wextra -pedantic $cstd -pthread -fPIC -O2 -ffast-math -g $*"
+CFLAGS="-Wall -Wextra -pedantic $cstd -pthread -fPIC $*"
 libs='sdl2 glew freealut vorbisfile'
 if ! hash pkg-config 2>/dev/null; then
 	echo "pkg-config is missing" 1>&2

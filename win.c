@@ -365,6 +365,30 @@ unsigned smtDisplayCount(void)
 	return (unsigned)(n < 0 ? 0 : n);
 }
 
+unsigned smtModeCount(unsigned i)
+{
+	if (i >= smtDisplayCount())
+		return 0;
+	int n = SDL_GetNumDisplayModes(i);
+	return (unsigned)(n < 0 ? 0 : n);
+}
+
+int smtModeBounds(unsigned scr, unsigned i, struct smtMode *mode)
+{
+	if (i >= smtModeCount(scr))
+		return SMT_ERR_OVERFLOW;
+	// make sure invalid/unmodified values are spotted
+	SDL_DisplayMode dmode = {SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0};
+	if (SDL_GetDisplayMode(scr, i, &dmode))
+		return SMT_ERR_STATE;
+	mode->format = dmode.format;
+	mode->bitdepth = SDL_BITSPERPIXEL(dmode.format);
+	mode->width = dmode.w;
+	mode->height = dmode.h;
+	mode->frequency = dmode.refresh_rate;
+	return 0;
+}
+
 int smtDisplayBounds(unsigned i, int *x, int *y, unsigned *w, unsigned *h)
 {
 	unsigned n = smtDisplayCount();

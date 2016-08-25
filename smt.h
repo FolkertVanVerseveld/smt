@@ -98,6 +98,13 @@ typedef struct smtTimer {
 	unsigned elapsed, last, next, delay;
 } smtTimer_t;
 
+typedef struct smtMode {
+	int format;
+	unsigned bitdepth;
+	unsigned width, height;
+	unsigned frequency;
+} smtMode_t;
+
 /* timing */
 void smtResett(struct smtTimer *t);
 unsigned smtTickt(struct smtTimer *t);
@@ -201,6 +208,8 @@ unsigned smtDisplayCount(void);
 int smtDisplayBounds(unsigned index, int *x, int *y, unsigned *w, unsigned *h);
 /** determine on which display the window is located */
 int smtDisplaywin(unsigned win, unsigned *display);
+unsigned smtModeCount(unsigned index);
+int smtModeBounds(unsigned display, unsigned index, struct smtMode *mode);
 
 /* messages */
 #define SMT_MSG_ERR 0

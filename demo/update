@@ -1,0 +1,2 @@
+#!/bin/bash -e
+cd .. && ./build -DSMT_DEBUG && make && cd demo && ./build -DSMT_DEBUG && make || cd ~/smt/demo
