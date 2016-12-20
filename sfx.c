@@ -25,10 +25,12 @@ void _smt_freesfx(void)
 		alcDestroyContext(_smt.al.ctx);
 		_smt.al.ctx = NULL;
 	}
+#ifndef ALC_DEV_NOCLOSE
 	if (_smt.al.dev) {
 		alcCloseDevice(_smt.al.dev);
 		_smt.al.dev = NULL;
 	}
+#endif
 	_smt.init.sfx = 0;
 }
 

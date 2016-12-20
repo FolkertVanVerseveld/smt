@@ -1,0 +1,4 @@
+Xubuntu 16
+
+SMT crashes during audio cleanup. Define ALC_DEV_NOCLOSE in sfx.c or globally to
+fix this. For example: ./build -g -DDEBUG -DALC_DEV_NOCLOSE
